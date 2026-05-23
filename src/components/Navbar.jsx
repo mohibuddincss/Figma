@@ -1,17 +1,98 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import '../App.css';
-function Navbar() {
-  return (
-    <div className='bg-purple-500 flex justify-center gap-7 p-7  '>
-      <Link to={'/'} className='text-white font-medium hover:underline hover:bg-purple-800 '  >Home</Link>
-      <Link to={'/login'} className='text-white font-medium hover:underline hover:bg-purple-800' >Login</Link>
-      <Link to={'/dashboard'} className='text-white font-medium hover:underline hover:bg-purple-800' >Dashboard</Link>
-      <Link to={'/profile'} className='text-white font-medium hover:underline hover:bg-purple-800' >Profile</Link>
-      <Link to={'/register'} className='text-white font-medium hover:underline hover:bg-purple-800' >Register</Link>
-      <Link to={'/blog'} className='text-white font-medium hover:underline hover:bg-purple-800' >Blog</Link>
-    </div>
-  )
-}
+import { Link ,useNavigate} from 'react-router-dom'
 
-export default Navbar
+
+/* Redux */
+import { useSelector, useDispatch } from "react-redux";
+import { loginUser } from '../redux/reducer/userSlice';
+import { logoutUser } from '../redux/reducer/userSlice';
+import { supabase } from '../config/supabase';
+
+const Navbar = () => {
+
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const { user } = useSelector(state => state.user)
+  console.log(user);
+
+
+  const handleLogout =async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+      dispatch(logoutUser())
+      navigate('/login')
+
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong');
+    }
+
+
+  }
+
+  return (
+    <nav className="bg-gradient-to-r from-blue-700 to-cyan-500 shadow-lg">
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+        {/* Logo */}
+        <Link
+          to="/"
+          className="text-white text-xl sm:text-2xl font-bold tracking-wide text-center sm:text-left"
+        >
+          Personal Blogging App
+        </Link>
+
+        {/* Right Side */}
+        <div className="flex items-center flex-wrap justify-center gap-3 sm:gap-4">
+
+          {user && <div>
+            <Link
+              to="/profile"
+              className="text-white font-semibold text-sm sm:text-base hover:text-slate-200 transition-all duration-300"
+            >
+              {user.first_name}
+            </Link>
+
+            {/* Logout */}
+            <button
+              className="bg-white text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-slate-100 transition-all duration-300 text-sm sm:text-base"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </div>}
+
+
+          {!user && <>
+            <Link
+              to="/login"
+              className="text-white border border-white px-4 py-2 rounded-lg hover:bg-white hover:text-blue-700 transition-all duration-300 text-sm sm:text-base"
+            >
+              Login
+            </Link>
+
+            {/* Signup */}
+            <Link
+              to="/register"
+              className="bg-white text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-slate-100 transition-all duration-300 text-sm sm:text-base"
+            >
+              Signup
+            </Link>
+          </>}
+
+        </div>
+
+      </div>
+
+    </nav>
+  );
+};
+
+export default Navbar;
